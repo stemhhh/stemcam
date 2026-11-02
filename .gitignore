@@ -17,6 +17,7 @@ obs-plugin/build/
 obs-web-device/build/
 nexocam-worker/node_modules/
 nexocam-worker/.wrangler/
+nexocam-site/.wrangler/
 *.log
 **/CMakeCache.txt
 **/CMakeFiles/
