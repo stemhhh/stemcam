@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#121417">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>NexoCam — Conectar</title>
+  <link rel="stylesheet" href="./app.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <p class="eyebrow"><a href="/" style="color:inherit;text-decoration:none">NexoCam</a></p>
+        <h1 data-i18n="title">Conectar</h1>
+      </div>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" id="lang-es" class="active">ES</button>
+        <button type="button" id="lang-en">EN</button>
+      </div>
+    </header>
+
+    <section id="app">
+      <section class="card" id="setup">
+        <label>
+          <span data-i18n="room">Código de sala</span>
+          <input id="room" inputmode="latin" autocapitalize="characters" autocomplete="off" maxlength="12" spellcheck="false">
+        </label>
+        <label>
+          <span data-i18n="password">Contraseña</span>
+          <input id="password" type="password" autocomplete="current-password" maxlength="64">
+        </label>
+        <label>
+          <span data-i18n="name">Nombre</span>
+          <input id="device-name" maxlength="40" autocomplete="off">
+        </label>
+        <label>
+          <span data-i18n="camera">Cámara</span>
+          <select id="camera"></select>
+        </label>
+        <div class="row">
+          <button type="button" id="facing-back" data-i18n="back">Trasera</button>
+          <button type="button" id="facing-front" data-i18n="front">Frontal</button>
+          <button type="button" id="refresh" data-i18n="refresh">Actualizar</button>
+        </div>
+        <label>
+          <span data-i18n="mic">Micrófono</span>
+          <select id="mic"></select>
+        </label>
+        <label>
+          <span data-i18n="quality">Calidad</span>
+          <select id="quality"></select>
+        </label>
+        <label class="check">
+          <input id="mirror" type="checkbox">
+          <span data-i18n="mirror">Espejo</span>
+        </label>
+        <label class="check">
+          <input id="voice" type="checkbox" checked>
+          <span data-i18n="voice">Reducir eco y ruido</span>
+        </label>
+        <button type="button" id="start" class="primary" data-i18n="start">Iniciar</button>
+      </section>
+
+      <section class="card live" id="live" hidden>
+        <div class="preview-wrap">
+          <video id="preview" playsinline autoplay muted></video>
+          <div id="tally" data-i18n="onAir">En el aire</div>
+        </div>
+        <div class="meter" aria-hidden="true"><span id="level"></span></div>
+        <p id="stats"></p>
+        <button type="button" id="stop" class="danger" data-i18n="stop">Detener</button>
+      </section>
+
+      <p id="status" role="status"></p>
+      <p class="hint" data-i18n="hint">Usa el código y la contraseña que muestra NexoCam en OBS. 720p es el mejor equilibrio.</p>
+    </section>
+  </main>
+  <script src="/config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

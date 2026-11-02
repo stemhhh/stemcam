@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <TextureView
+        android:id="@+id/previewView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/controlsScroll"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.obsphonecam.ui.GridOverlayView
+        android:id="@+id/gridOverlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/previewView"
+        app:layout_constraintEnd_toEndOf="@id/previewView"
+        app:layout_constraintStart_toStartOf="@id/previewView"
+        app:layout_constraintTop_toTopOf="@id/previewView" />
+
+    <com.obsphonecam.ui.LevelOverlayView
+        android:id="@+id/levelOverlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/previewView"
+        app:layout_constraintEnd_toEndOf="@id/previewView"
+        app:layout_constraintStart_toStartOf="@id/previewView"
+        app:layout_constraintTop_toTopOf="@id/previewView" />
+
+    <com.obsphonecam.ui.ScopeOverlayView
+        android:id="@+id/scopeOverlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/previewView"
+        app:layout_constraintEnd_toEndOf="@id/previewView"
+        app:layout_constraintStart_toStartOf="@id/previewView"
+        app:layout_constraintTop_toTopOf="@id/previewView" />
+
+    <TextView
+        android:id="@+id/hudText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="#B0000000"
+        android:fontFamily="monospace"
+        android:padding="10dp"
+        android:text="HUD"
+        android:textColor="@color/accent"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@id/metricsText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="#99000000"
+        android:padding="8dp"
+        android:text="@string/status_idle"
+        android:textColor="@color/text"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/hudText" />
+
+    <TextView
+        android:id="@+id/metricsText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:background="#99000000"
+        android:padding="8dp"
+        android:text="—"
+        android:textColor="@color/accent"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/audioMeter"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:max="100"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/metricsText" />
+
+    <HorizontalScrollView
+        android:id="@+id/controlsScroll"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/panel"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:id="@+id/controlsRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Spinner android:id="@+id/sceneSpinner" android:layout_width="150dp" android:layout_height="48dp" android:layout_marginEnd="8dp" />
+            <Spinner android:id="@+id/modeSpinner" android:layout_width="120dp" android:layout_height="48dp" android:layout_marginEnd="8dp" />
+            <Spinner android:id="@+id/lensSpinner" android:layout_width="140dp" android:layout_height="48dp" android:layout_marginEnd="8dp" />
+            <Spinner android:id="@+id/lookSpinner" android:layout_width="130dp" android:layout_height="48dp" android:layout_marginEnd="8dp" />
+            <Spinner android:id="@+id/presetSpinner" android:layout_width="150dp" android:layout_height="48dp" android:layout_marginEnd="8dp" />
+            <Spinner android:id="@+id/resolutionSpinner" android:layout_width="150dp" android:layout_height="48dp" android:layout_marginEnd="8dp" />
+            <Spinner android:id="@+id/fpsSpinner" android:layout_width="110dp" android:layout_height="48dp" android:layout_marginEnd="8dp" />
+            <Spinner android:id="@+id/micSpinner" android:layout_width="130dp" android:layout_height="48dp" android:layout_marginEnd="8dp" />
+            <Spinner android:id="@+id/scopeSpinner" android:layout_width="130dp" android:layout_height="48dp" android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.button.MaterialButton android:id="@+id/streamButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="@string/start_stream" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/recordButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="Rec" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/hvButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="H+V" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/rawButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="RAW" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/torchButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="@string/torch" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/flipButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="@string/flip_camera" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/lockButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="AE/AF Lock" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/eisButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="EIS" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/trackButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="Track" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/blurButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="Blur" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/gridButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="Grid" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/reconnectButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="Reconnect" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/qrButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="QR" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/capsButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="Caps" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/logButton" style="@style/Widget.MaterialComponents.Button.OutlinedButton" android:layout_width="wrap_content" android:layout_height="48dp" android:layout_marginEnd="8dp" android:text="@string/share_log" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:paddingStart="8dp" android:text="ISO" android:textColor="@color/muted" />
+            <TextView android:id="@+id/isoValue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:text="Auto" android:textColor="@color/text" />
+            <SeekBar android:id="@+id/isoSeek" android:layout_width="160dp" android:layout_height="48dp" android:max="100" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:paddingStart="8dp" android:text="Exp" android:textColor="@color/muted" />
+            <TextView android:id="@+id/expValue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:text="Auto" android:textColor="@color/text" />
+            <SeekBar android:id="@+id/exposureSeek" android:layout_width="160dp" android:layout_height="48dp" android:max="100" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:paddingStart="8dp" android:text="Zoom" android:textColor="@color/muted" />
+            <TextView android:id="@+id/zoomValue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:text="1.0x" android:textColor="@color/text" />
+            <SeekBar android:id="@+id/zoomSeek" android:layout_width="160dp" android:layout_height="48dp" android:max="100" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:paddingStart="8dp" android:text="Focus" android:textColor="@color/muted" />
+            <SeekBar android:id="@+id/focusSeek" android:layout_width="160dp" android:layout_height="48dp" android:max="100" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:paddingStart="8dp" android:text="WB" android:textColor="@color/muted" />
+            <TextView android:id="@+id/wbValue" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:text="Auto" android:textColor="@color/text" />
+            <SeekBar android:id="@+id/wbSeek" android:layout_width="160dp" android:layout_height="48dp" android:max="100" android:progress="50" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:paddingStart="8dp" android:text="Flash" android:textColor="@color/muted" />
+            <SeekBar android:id="@+id/flashSeek" android:layout_width="140dp" android:layout_height="48dp" android:max="100" android:progress="100" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:paddingStart="8dp" android:text="Bitrate" android:textColor="@color/muted" />
+            <SeekBar android:id="@+id/bitrateSeek" android:layout_width="180dp" android:layout_height="48dp" android:max="100" android:progress="80" />
+        </LinearLayout>
+    </HorizontalScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

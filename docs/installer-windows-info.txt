@@ -1,0 +1,19 @@
+OBS Phone Cam — Windows installer
+
+This single installer will:
+  1. Close OBS if it is running
+  2. Install the Phone Cam (USB) plugin into OBS
+  3. Install the required FFmpeg DLLs next to the plugin
+  4. Install translations (EN/ES)
+  5. Register the WinUSB driver for the phone accessory
+
+After install:
+  - Open OBS Studio
+  - Add Source → Phone Cam (USB)
+  - Install the Android APK on your phone (separate file):
+      OBSPhoneCam-Android.apk
+  - Open the phone app, plug a data USB cable, tap Start
+
+Requirements:
+  - Windows 10/11 64-bit
+  - OBS Studio already installed

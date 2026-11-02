@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Copilot Camera Pro</string>
+    <string name="status_idle">Esperando USB… Abre OBS y conecta el cable.</string>
+    <string name="status_connected">USB conectado</string>
+    <string name="status_streaming">Transmitiendo</string>
+    <string name="status_reconnecting">Reconectando…</string>
+    <string name="status_error">Error</string>
+    <string name="permission_camera">Se requiere permiso de cámara</string>
+    <string name="permission_mic">El micrófono es opcional para el audio del teléfono</string>
+    <string name="preset_native_max">Native Max</string>
+    <string name="preset_high">Alta</string>
+    <string name="preset_balanced">Equilibrada</string>
+    <string name="preset_low_latency">Baja latencia</string>
+    <string name="start_stream">Iniciar</string>
+    <string name="stop_stream">Detener</string>
+    <string name="torch">Linterna</string>
+    <string name="flip_camera">Girar</string>
+    <string name="share_log">Compartir log</string>
+    <string name="audio_toggle">Mic</string>
+    <string name="notif_title">OBS Phone Cam</string>
+    <string name="notif_text">Stream USB de cámara activo</string>
+    <string name="onboarding_title">Conecta en 3 pasos</string>
+    <string name="onboarding_1">1. Añade “Phone Cam (USB)” en OBS</string>
+    <string name="onboarding_2">2. Conecta un cable USB de datos al PC</string>
+    <string name="onboarding_3">3. Pulsa Iniciar (o activa auto-start en OBS)</string>
+    <string name="onboarding_ok">Entendido</string>
+    <string name="auto">Auto</string>
+    <string name="manual">Manual</string>
+</resources>

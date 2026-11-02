@@ -1,0 +1,14 @@
+OBS Phone Cam — Android installer
+
+The Android installer is the APK file:
+  OBSPhoneCam-Android.apk
+
+Install steps on the phone:
+  1. Copy OBSPhoneCam-Android.apk to the phone
+  2. Open it and allow “Install unknown apps” if asked
+  3. Grant Camera (and Microphone if you want phone audio)
+  4. Open OBS Phone Cam
+  5. On the PC, install OBSPhoneCam-Windows-Setup first
+  6. Plug a USB data cable, then tap Start in the app
+
+That is the complete Android side — one APK install.

@@ -1,0 +1,33 @@
+# Android
+android-app/.gradle/
+android-app/build/
+android-app/app/build/
+android-app/local.properties
+android-app/keystore.properties
+*.jks
+*.keystore
+android-app/.idea/
+*.iml
+.DS_Store
+dist/
+deps/
+
+# OBS / C++
+obs-plugin/build/
+obs-web-device/build/
+nexocam-worker/node_modules/
+nexocam-worker/.wrangler/
+*.log
+**/CMakeCache.txt
+**/CMakeFiles/
+*.obj
+*.o
+*.dll
+*.pdb
+*.exp
+*.lib
+
+# IDE
+.vs/
+.vscode/
+*.user

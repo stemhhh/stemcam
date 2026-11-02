@@ -1,0 +1,11 @@
+This product dynamically links FFmpeg libraries (libavcodec, libavutil, libswscale).
+
+FFmpeg is licensed under the LGPL version 2.1 or later (depending on the build you redistribute).
+Source: https://ffmpeg.org/
+
+If you redistribute FFmpeg DLLs with OBS Phone Cam:
+- Keep this notice
+- Do not enable GPL-only parts unless you comply with GPL
+- Offer corresponding FFmpeg source for the binary build you ship
+
+OBS Phone Cam itself does not modify FFmpeg source; it loads shared libraries at runtime.

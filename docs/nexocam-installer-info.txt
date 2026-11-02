@@ -1,0 +1,17 @@
+NexoCam for OBS Studio
+======================
+
+This installer adds the NexoCam source to OBS.
+
+After install:
+1. Open OBS Studio
+2. Sources → Add → NexoCam
+3. Copy the connect link and the password
+4. On your phone or another computer open https://nexocam.pages.dev (or your site) → Connect
+5. Enter the room code and password, pick any camera and/or microphone, Start
+
+Only people who know the password from the OBS source can join the room.
+
+Cloudflare is the main path. LAN fallback stays available in the source properties.
+
+Uninstall from Windows Settings → Apps, or the Start Menu shortcut.
