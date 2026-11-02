@@ -129,9 +129,14 @@ export class Room {
     serverSock.addEventListener("message", (event) => {
       if (typeof event.data !== "string") {
         if (!authed || role !== "client" || !this.plugin) return;
+        /* Drop oversized frames instead of killing the Durable Object. */
+        const size = typeof event.data.byteLength === "number" ? event.data.byteLength : event.data.length || 0;
+        if (size > 3 * 1024 * 1024) return;
         try {
           this.plugin.ws.send(event.data);
-        } catch (_) {}
+        } catch (_) {
+          this.sendJson(serverSock, { type: "error", error: "plugin_send_failed" });
+        }
         return;
       }
 
@@ -139,6 +144,11 @@ export class Room {
       try {
         msg = JSON.parse(event.data);
       } catch (_) {
+        return;
+      }
+
+      if (msg.type === "ping") {
+        this.sendJson(serverSock, { type: "pong" });
         return;
       }
 

@@ -15,10 +15,11 @@ const STR = {
     start: "Iniciar",
     stop: "Detener",
     onAir: "En el aire",
-    hint: "Usa el código y la contraseña que muestra NexoCam en OBS. 720p es el mejor equilibrio.",
+    hint: "Si el enlace viene de OBS, sala y contraseña ya vienen rellenadas. Deja la pestaña abierta en primer plano (Brave/iPhone).",
     noneCam: "Sin cámara",
     noneMic: "Sin micrófono",
     device: "Dispositivo",
+    qAuto: "Auto (según la red)",
     qMax: "1080p",
     qHigh: "720p",
     qLow: "480p, menos retraso",
@@ -52,10 +53,11 @@ const STR = {
     start: "Start",
     stop: "Stop",
     onAir: "On air",
-    hint: "Use the room code and password shown by NexoCam in OBS. 720p is the best balance.",
+    hint: "If you opened OBS’s link, room and password are filled. Keep this tab in the foreground (Brave/iPhone).",
     noneCam: "No camera",
     noneMic: "No microphone",
     device: "Device",
+    qAuto: "Auto (adapts to network)",
     qMax: "1080p",
     qHigh: "720p",
     qLow: "480p, lower delay",
@@ -75,11 +77,12 @@ const STR = {
   },
 };
 
-const PRESETS = {
-  max: { w: 1920, h: 1080, fps: 30, q: 0.72 },
-  high: { w: 1280, h: 720, fps: 30, q: 0.76 },
-  low: { w: 854, h: 480, fps: 24, q: 0.62 },
-};
+const LADDER = [
+  { id: "max", w: 1920, h: 1080, fps: 30, q: 0.72 },
+  { id: "high", w: 1280, h: 720, fps: 30, q: 0.74 },
+  { id: "low", w: 854, h: 480, fps: 24, q: 0.62 },
+  { id: "min", w: 640, h: 360, fps: 15, q: 0.55 },
+];
 
 const $ = (id) => document.getElementById(id);
 const roomInput = $("room");
@@ -95,6 +98,8 @@ const statusEl = $("status");
 const statsEl = $("stats");
 const levelEl = $("level");
 
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
 const state = {
   lang: "es",
   want: false,
@@ -103,13 +108,18 @@ const state = {
   stream: null,
   audioCtx: null,
   timer: 0,
+  pingTimer: 0,
+  adaptTimer: 0,
   busy: false,
   wakeLock: null,
   bytes: 0,
   frames: 0,
+  dropped: 0,
   statAt: 0,
   canvas: document.createElement("canvas"),
   ctx2d: null,
+  autoLevel: isMobile ? 2 : 1,
+  lastPong: 0,
 };
 
 function t(key) {
@@ -135,15 +145,15 @@ function applyLang() {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     el.textContent = t(el.getAttribute("data-i18n"));
   });
-  const current = qualitySelect.value || "high";
+  const current = qualitySelect.value || "auto";
   qualitySelect.innerHTML = "";
-  for (const id of ["high", "max", "low"]) {
+  for (const [id, label] of [["auto", "qAuto"], ["high", "qHigh"], ["max", "qMax"], ["low", "qLow"]]) {
     const option = document.createElement("option");
     option.value = id;
-    option.textContent = t(id === "max" ? "qMax" : id === "low" ? "qLow" : "qHigh");
+    option.textContent = t(label);
     qualitySelect.appendChild(option);
   }
-  qualitySelect.value = current;
+  qualitySelect.value = [...qualitySelect.options].some((o) => o.value === current) ? current : "auto";
   $("lang-es").classList.toggle("active", state.lang === "es");
   $("lang-en").classList.toggle("active", state.lang === "en");
   refreshDevices();
@@ -157,8 +167,11 @@ function passwordValue() {
   return passwordInput.value;
 }
 
-function preset() {
-  return PRESETS[qualitySelect.value] || PRESETS.high;
+function activePreset() {
+  if (qualitySelect.value === "auto")
+    return LADDER[Math.min(state.autoLevel, LADDER.length - 1)];
+  const found = LADDER.find((p) => p.id === qualitySelect.value);
+  return found || LADDER[1];
 }
 
 function fillSelect(select, devices, noneLabel) {
@@ -188,7 +201,7 @@ async function refreshDevices() {
 }
 
 function videoConstraints(facing) {
-  const chosen = preset();
+  const chosen = activePreset();
   const video = {
     width: { ideal: chosen.w },
     height: { ideal: chosen.h },
@@ -339,7 +352,10 @@ function meter() {
 
 function sendPcm(pcm) {
   if (!state.ready || !state.ws || state.ws.readyState !== WebSocket.OPEN) return;
-  if (state.ws.bufferedAmount > 400000) return;
+  if (state.ws.bufferedAmount > 250000) {
+    state.dropped += 1;
+    return;
+  }
   const payload = new Uint8Array(9 + pcm.byteLength);
   const view = new DataView(payload.buffer);
   payload[0] = 2;
@@ -353,7 +369,10 @@ function sendPcm(pcm) {
 
 function sendVideo(bytes, width, height) {
   if (!state.ready || !state.ws || state.ws.readyState !== WebSocket.OPEN) return;
-  if (state.ws.bufferedAmount > 1500000) return;
+  if (state.ws.bufferedAmount > 700000) {
+    state.dropped += 1;
+    return;
+  }
   const payload = new Uint8Array(5 + bytes.length);
   const view = new DataView(payload.buffer);
   payload[0] = 1;
@@ -368,15 +387,27 @@ function sendVideo(bytes, width, height) {
   if (now - state.statAt > 1000) {
     const seconds = (now - state.statAt) / 1000;
     const kbps = Math.round((state.bytes * 8) / seconds / 1000);
-    statsEl.textContent = `${width}×${height} · ${Math.round(state.frames / seconds)} fps · ${kbps} kbps`;
+    const mode = qualitySelect.value === "auto" ? `auto/${activePreset().id}` : activePreset().id;
+    statsEl.textContent = `${width}×${height} · ${Math.round(state.frames / seconds)} fps · ${kbps} kbps · ${mode}` +
+      (state.dropped ? ` · drop ${state.dropped}` : "");
     state.bytes = 0;
     state.frames = 0;
+    state.dropped = 0;
     state.statAt = now;
   }
 }
 
+function adaptQuality() {
+  if (!state.want || qualitySelect.value !== "auto" || !state.ws) return;
+  const buffered = state.ws.bufferedAmount || 0;
+  if (buffered > 500000 && state.autoLevel < LADDER.length - 1)
+    state.autoLevel += 1;
+  else if (buffered < 80000 && state.autoLevel > (isMobile ? 1 : 0))
+    state.autoLevel -= 1;
+}
+
 function drawFrame() {
-  const chosen = preset();
+  const chosen = activePreset();
   const canvas = state.canvas;
   if (canvas.width !== chosen.w || canvas.height !== chosen.h) {
     canvas.width = chosen.w;
@@ -403,11 +434,13 @@ function drawFrame() {
 
 function videoLoop() {
   if (!state.want) return;
-  state.timer = setTimeout(videoLoop, 1000 / preset().fps);
+  state.timer = setTimeout(videoLoop, 1000 / Math.max(8, activePreset().fps));
+  if (document.hidden) return;
   const track = state.stream && state.stream.getVideoTracks()[0];
   if (!track || state.busy || preview.readyState < 2) return;
   state.busy = true;
   drawFrame();
+  const q = activePreset().q;
   state.canvas.toBlob(async (blob) => {
     try {
       if (blob && state.want) {
@@ -417,15 +450,28 @@ function videoLoop() {
     } finally {
       state.busy = false;
     }
-  }, "image/jpeg", preset().q);
+  }, "image/jpeg", q);
 }
 
 function wsEndpoint() {
   const cfg = window.NEXOCAM || {};
   if (cfg.wsUrl) return cfg.wsUrl;
-  /* LAN / plugin-hosted page: talk to the same host. */
   const proto = location.protocol === "https:" ? "wss" : "ws";
   return `${proto}://${location.host}/ws`;
+}
+
+function startPing() {
+  clearInterval(state.pingTimer);
+  state.lastPong = Date.now();
+  state.pingTimer = setInterval(() => {
+    if (!state.ws || state.ws.readyState !== WebSocket.OPEN) return;
+    try {
+      state.ws.send(JSON.stringify({ type: "ping" }));
+    } catch (e) {}
+    if (Date.now() - state.lastPong > 20000 && state.want) {
+      try { state.ws.close(); } catch (e) {}
+    }
+  }, 5000);
 }
 
 function connectWs() {
@@ -449,13 +495,19 @@ function connectWs() {
       room: roomCode(),
       password: passwordValue(),
     }));
+    startPing();
   };
   ws.onmessage = (event) => {
     if (typeof event.data !== "string") return;
     let msg;
     try { msg = JSON.parse(event.data); } catch (e) { return; }
+    if (msg.type === "pong") {
+      state.lastPong = Date.now();
+      return;
+    }
     if (msg.type === "welcome") {
       state.ready = true;
+      state.lastPong = Date.now();
       const cam = cameraSelect.selectedOptions[0];
       const mic = micSelect.selectedOptions[0];
       const name = nameInput.value.trim() || defaultName();
@@ -474,9 +526,10 @@ function connectWs() {
     state.ready = false;
     if (state.want && state.ws === ws) {
       setStatus(t("reconnecting"));
-      setTimeout(connectWs, 1200);
+      setTimeout(connectWs, isMobile ? 800 : 1200);
     }
   };
+  ws.onerror = () => {};
 }
 
 async function lockWake() {
@@ -488,8 +541,10 @@ async function lockWake() {
   }
 }
 
-function cleanup() {
+function cleanup(keepWant) {
   clearTimeout(state.timer);
+  clearInterval(state.pingTimer);
+  clearInterval(state.adaptTimer);
   state.ready = false;
   if (state.ws) {
     state.ws.onclose = null;
@@ -507,8 +562,10 @@ function cleanup() {
     state.wakeLock.release().catch(() => {});
     state.wakeLock = null;
   }
-  $("setup").hidden = false;
-  $("live").hidden = true;
+  if (!keepWant) {
+    $("setup").hidden = false;
+    $("live").hidden = true;
+  }
 }
 
 async function start() {
@@ -527,6 +584,7 @@ async function start() {
     return;
   }
   state.want = true;
+  state.autoLevel = isMobile ? 2 : 1;
   setStatus(t("starting"));
   try {
     if (micSelect.value !== "__none__") {
@@ -547,6 +605,8 @@ async function start() {
   connectWs();
   if (state.stream && state.stream.getVideoTracks().length)
     videoLoop();
+  clearInterval(state.adaptTimer);
+  state.adaptTimer = setInterval(adaptQuality, 1000);
 }
 
 function stop() {
@@ -591,9 +651,12 @@ function boot() {
   const params = new URLSearchParams(location.search);
   const room = (params.get("room") || "").toUpperCase();
   if (room) roomInput.value = room;
+  const pass = params.get("password");
+  if (pass) passwordInput.value = pass;
   nameInput.value = defaultName();
   state.ctx2d = state.canvas.getContext("2d", { alpha: false });
   applyLang();
+  qualitySelect.value = "auto";
   refreshDevices();
 }
 
@@ -613,7 +676,18 @@ $("refresh").onclick = () => refreshDevices();
 $("facing-back").onclick = () => pickFacing("environment");
 $("facing-front").onclick = () => pickFacing("user");
 mirrorInput.onchange = () => preview.classList.toggle("mirror", mirrorInput.checked);
-window.addEventListener("pagehide", () => stop());
+window.addEventListener("pagehide", () => {
+  if (state.want) {
+    /* Keep want=true so we reconnect when returning if possible. */
+  }
+});
+document.addEventListener("visibilitychange", () => {
+  if (!state.want) return;
+  if (document.hidden) return;
+  lockWake();
+  if (!state.ws || state.ws.readyState !== WebSocket.OPEN)
+    connectWs();
+});
 if (navigator.mediaDevices) navigator.mediaDevices.addEventListener("devicechange", () => refreshDevices());
 
 boot();

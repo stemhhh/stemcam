@@ -1,5 +1,12 @@
 # NexoCam changelog
 
+## 1.0.1
+
+- Fix partial/top-only video (WebSocket binary fragment reassembly)
+- Auto quality adapts to network load; skip frames when the socket backs up
+- Keep-alive ping/pong for iPhone/Brave stability
+- Connect link from OBS includes room + password
+
 ## 1.0.0
 
 - OBS source **NexoCam** with room code + password

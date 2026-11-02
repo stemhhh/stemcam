@@ -2,7 +2,7 @@
 ; Builds: dist\NexoCam-Windows-Setup-1.0.0.exe
 
 #define MyAppName "NexoCam"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "NexoCam"
 #define MyAppURL "https://github.com/stemhhh/nexocam"
 

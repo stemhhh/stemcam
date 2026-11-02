@@ -303,7 +303,10 @@ void CloudBridge::run()
 
 		set_status("Waiting for device…");
 		bool welcomed = false;
-		std::vector<uint8_t> buf(256 * 1024);
+		std::vector<uint8_t> buf(1024 * 1024);
+		std::vector<uint8_t> msg_acc;
+		bool msg_is_utf8 = false;
+		const size_t kMaxMsg = 8u * 1024u * 1024u;
 
 		while (!stop_.load()) {
 			DWORD read = 0;
@@ -314,9 +317,33 @@ void CloudBridge::run()
 			if (type == WINHTTP_WEB_SOCKET_CLOSE_BUFFER_TYPE)
 				break;
 
-			if (type == WINHTTP_WEB_SOCKET_UTF8_MESSAGE_BUFFER_TYPE ||
-			    type == WINHTTP_WEB_SOCKET_UTF8_FRAGMENT_BUFFER_TYPE) {
-				std::string text((char *)buf.data(), (char *)buf.data() + read);
+			const bool utf8_frag = type == WINHTTP_WEB_SOCKET_UTF8_FRAGMENT_BUFFER_TYPE;
+			const bool utf8_msg = type == WINHTTP_WEB_SOCKET_UTF8_MESSAGE_BUFFER_TYPE;
+			const bool bin_frag = type == WINHTTP_WEB_SOCKET_BINARY_FRAGMENT_BUFFER_TYPE;
+			const bool bin_msg = type == WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE;
+			if (!utf8_frag && !utf8_msg && !bin_frag && !bin_msg)
+				continue;
+
+			const bool is_utf8 = utf8_frag || utf8_msg;
+			const bool is_final = utf8_msg || bin_msg;
+			if (msg_acc.empty())
+				msg_is_utf8 = is_utf8;
+			else if (msg_is_utf8 != is_utf8) {
+				msg_acc.clear();
+				msg_is_utf8 = is_utf8;
+			}
+			if (msg_acc.size() + read > kMaxMsg) {
+				blog(LOG_WARNING, "[nexocam] dropping oversized websocket message");
+				msg_acc.clear();
+				continue;
+			}
+			msg_acc.insert(msg_acc.end(), buf.begin(), buf.begin() + read);
+			if (!is_final)
+				continue;
+
+			if (msg_is_utf8) {
+				std::string text(msg_acc.begin(), msg_acc.end());
+				msg_acc.clear();
 				std::string msg_type = json_string_field(text, "type");
 				if (msg_type == "welcome") {
 					welcomed = true;
@@ -335,15 +362,17 @@ void CloudBridge::run()
 						set_status(name.empty() ? "Device connected" : name);
 					else
 						set_status("Waiting for device…");
+				} else if (msg_type == "ping") {
+					const char *pong = "{\"type\":\"pong\"}";
+					WinHttpWebSocketSend(ws, WINHTTP_WEB_SOCKET_UTF8_MESSAGE_BUFFER_TYPE,
+							     (PVOID)pong, (DWORD)strlen(pong));
 				}
 				continue;
 			}
 
-			if (type == WINHTTP_WEB_SOCKET_BINARY_MESSAGE_BUFFER_TYPE ||
-			    type == WINHTTP_WEB_SOCKET_BINARY_FRAGMENT_BUFFER_TYPE) {
-				if (welcomed && sink_)
-					handle_binary(sink_, buf.data(), read);
-			}
+			if (welcomed && sink_ && !msg_acc.empty())
+				handle_binary(sink_, msg_acc.data(), msg_acc.size());
+			msg_acc.clear();
 		}
 
 		if (linked_.load() && sink_)

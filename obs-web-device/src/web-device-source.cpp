@@ -111,16 +111,35 @@ struct WebDeviceSource : WebDeviceSink {
 		return status;
 	}
 
+	static std::string url_encode(const std::string &s)
+	{
+		static const char *hex = "0123456789ABCDEF";
+		std::string out;
+		out.reserve(s.size() * 3);
+		for (unsigned char c : s) {
+			if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' ||
+			    c == '_' || c == '.' || c == '~') {
+				out.push_back((char)c);
+			} else {
+				out.push_back('%');
+				out.push_back(hex[c >> 4]);
+				out.push_back(hex[c & 15]);
+			}
+		}
+		return out;
+	}
+
 	void refresh_urls()
 	{
 		connect_url = site_url;
 		if (!connect_url.empty() && connect_url.back() == '/')
 			connect_url.pop_back();
-		connect_url += "/app/?room=" + room;
+		connect_url += "/app/?room=" + url_encode(room) + "&password=" + url_encode(password);
 
 		WebDeviceInfo info = web_device_server_info();
 		int http_port = info.http_port ? info.http_port : port;
-		local_url = "http://127.0.0.1:" + std::to_string(http_port) + "/?room=" + room;
+		local_url = "http://127.0.0.1:" + std::to_string(http_port) + "/?room=" + url_encode(room) +
+			    "&password=" + url_encode(password);
 	}
 
 	void restart_cloud()
