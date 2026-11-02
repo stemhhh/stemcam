@@ -24,7 +24,7 @@
 
 namespace {
 
-constexpr const char *kDefaultWs = "wss://nexocam-api.nexocam.workers.dev/ws";
+constexpr const char *kDefaultWs = "wss://nexocam-api.iamkindomredy.workers.dev/ws";
 constexpr const char *kDefaultSite = "https://nexocam.pages.dev";
 
 std::string format_text(const char *key, ...)
